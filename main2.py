@@ -7,7 +7,7 @@ end = dt.datetime.now()
 start = end - dt.timedelta(days=5)
 
 price = vbt.YFData.download(
-    ["XMR-USD", "NEO-USD", "EOS-USD", "LTC-USD"],
+    ["XMR-USD", "NEO-USD"],
     start=start,
     end=end,
     interval="1m",
@@ -45,9 +45,9 @@ ind = vbt.IndicatorFactory(
 
 result = ind.run(price,
                  rsi_window=np.arange(10, 40, step=3, dtype=int),
-                 #ma_window=np.arange(10, 200, step=20, dtype=int),
+                 # ma_window=np.arange(10, 200, step=20, dtype=int),
                  entry=np.arange(10, 40, step=4, dtype=int),
-                 # exit=np.arange(60, 85, step=4, dtype=int),
+                 exit=np.arange(60, 85, step=4, dtype=int),
                  param_product=True)
 
 # print(result.value.to_string())
@@ -59,14 +59,23 @@ pf = vbt.Portfolio.from_signals(price, entries, exits)
 
 # print(pf.stats())
 returns = pf.total_return()
-returns = returns[returns.index.isin(["XMR-USD"], level="symbol")]
+# returns = returns[returns.index.isin(["XMR-USD"], level="symbol")]
+# returns = returns.groupby(level=["comb_exit", "comb_entry", "symbol"]).mean()
+
 print(returns.to_string())
 print(returns.max())
 print(returns.idxmax())
 #
 
-fig = returns.vbt.heatmap(
-    x_level="comb_rsi_window",
-    y_level="comb_entry"
+# fig = returns.vbt.heatmap(
+#     x_level="comb_exit",
+#     y_level="comb_entry",
+#     slider_level="symbol",
+# )
+fig = returns.vbt.volume(
+    x_level="comb_exit",
+    y_level="comb_entry",
+    z_level="comb_rsi_window",
+    slider_level="symbol",
 )
 fig.show()
